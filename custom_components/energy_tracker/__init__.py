@@ -1,4 +1,5 @@
 import json
+import aiofiles
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_FILE_PATH
@@ -14,10 +15,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # 從 Config Entry 攞 JSON 檔案路徑
     file_path = entry.data[CONF_FILE_PATH]
 
-    # 讀取 JSON 數據
+    # 異步讀取 JSON 數據
     try:
-        with open(file_path, "r") as file:
-            data = json.load(file)
+        async with aiofiles.open(file_path, mode="r") as file:
+            content = await file.read()
+            data = json.loads(content)
     except Exception as e:
         hass.components.logger.error(f"無法讀取 JSON 檔案 {file_path}: {e}")
         return False
