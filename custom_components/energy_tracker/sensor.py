@@ -1,6 +1,9 @@
+import json
+import aiofiles
 from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_FILE_PATH
 
 class TotalOnTimeSensor(SensorEntity):
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, name: str, value: int):
@@ -30,8 +33,17 @@ class DailyOnTimeSensor(SensorEntity):
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
     """Set up the sensor platform."""
-    # 從 entry.data 攞 JSON 數據
-    data = entry.data.get("energy_data", {})
+    # 從 Config Entry 攞 JSON 檔案路徑
+    file_path = entry.data[CONF_FILE_PATH]
+
+    # 異步讀取 JSON 數據
+    try:
+        async with aiofiles.open(file_path, mode="r") as file:
+            content = await file.read()
+            data = json.loads(content)
+    except Exception as e:
+        hass.components.logger.error(f"無法讀取 JSON 檔案 {file_path}: {e}")
+        return
 
     # 提取總數據
     monthly_on_time = int(data.get("MonthlyOnTime", 0))
