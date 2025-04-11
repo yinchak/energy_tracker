@@ -1,0 +1,6 @@
+{
+    "name": "energy_tracker",
+    "filename": "energy_tracker.zip",
+    "homeassistant": "2023.10.0",
+    "render_readme": true
+}
