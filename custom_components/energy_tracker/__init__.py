@@ -3,6 +3,7 @@ import aiofiles
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_FILE_PATH
+from homeassistant.helpers import entity_platform
 from .sensor import TotalOnTimeSensor, DailyOnTimeSensor
 
 DOMAIN = "energy_tracker"
@@ -35,6 +36,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     monthly_ai_details = data.get("MonthlyOnTimeAIDetail", [])
 
     # 創建感應器
+    platform = entity_platform.async_get_current_platform()
     sensors = [
         TotalOnTimeSensor(hass, entry, "monthly_on_time", monthly_on_time),
         TotalOnTimeSensor(hass, entry, "monthly_on_time_ai", monthly_on_time_ai),
@@ -52,11 +54,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         sensors.append(DailyOnTimeSensor(hass, entry, f"on_time_ai_{date_key}", on_time_ai))
         sensors.append(DailyOnTimeSensor(hass, entry, f"daily_saving_{date_key}", daily_saving))
 
-    # 加入感應器
-    hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(entry, "sensor")
-    )
-    entry.runtime_data = sensors
+    # 直接加入感應器
+    platform.async_add_entities(sensors)
+
+    # 用新方法設置
+    await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
     return True
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
