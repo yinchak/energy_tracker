@@ -2,9 +2,9 @@
   "domain": "energy_tracker",
   "name": "Energy Tracker",
   "version": "0.1.0",
-  "documentation": "https://github.com/yourusername/energy_tracker",
+  "documentation": "https://github.com/yinchak/energy_tracker",
   "requirements": [],
-  "codeowners": ["@yourusername"],
+  "codeowners": ["@yinchak"],
   "iot_class": "local_polling",
   "config_flow": true
 }
