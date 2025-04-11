@@ -3,6 +3,7 @@ import aiofiles
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_FILE_PATH
+from .sensor import TotalOnTimeSensor, DailyOnTimeSensor
 
 DOMAIN = "energy_tracker"
 
@@ -35,9 +36,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # 創建感應器
     sensors = [
-        TotalOnTimeSensor("monthly_on_time", monthly_on_time, entry.entry_id),
-        TotalOnTimeSensor("monthly_on_time_ai", monthly_on_time_ai, entry.entry_id),
-        TotalOnTimeSensor("ai_saving", ai_saving, entry.entry_id)
+        TotalOnTimeSensor(hass, entry, "monthly_on_time", monthly_on_time),
+        TotalOnTimeSensor(hass, entry, "monthly_on_time_ai", monthly_on_time_ai),
+        TotalOnTimeSensor(hass, entry, "ai_saving", ai_saving)
     ]
 
     # 為每個日子創建感應器（包括節省）
@@ -47,9 +48,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         on_time_ai = ai_detail["OnTime"]
         daily_saving = on_time - on_time_ai  # 每日節省
         date_key = f"2025_{day.replace('-', '_')}"  # 例如 "2025_02_01"
-        sensors.append(DailyOnTimeSensor(f"on_time_{date_key}", on_time, entry.entry_id))
-        sensors.append(DailyOnTimeSensor(f"on_time_ai_{date_key}", on_time_ai, entry.entry_id))
-        sensors.append(DailyOnTimeSensor(f"daily_saving_{date_key}", daily_saving, entry.entry_id))
+        sensors.append(DailyOnTimeSensor(hass, entry, f"on_time_{date_key}", on_time))
+        sensors.append(DailyOnTimeSensor(hass, entry, f"on_time_ai_{date_key}", on_time_ai))
+        sensors.append(DailyOnTimeSensor(hass, entry, f"daily_saving_{date_key}", daily_saving))
 
     # 加入感應器
     hass.async_create_task(
