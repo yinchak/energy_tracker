@@ -5,5 +5,6 @@
   "documentation": "https://github.com/yourusername/energy_tracker",
   "requirements": [],
   "codeowners": ["@yourusername"],
-  "iot_class": "local_polling"
+  "iot_class": "local_polling",
+  "config_flow": true
 }
