@@ -1,6 +1,7 @@
 from homeassistant import config_entries
 from homeassistant.const import CONF_FILE_PATH
 import voluptuous as vol
+import aiofiles
 
 DOMAIN = "energy_tracker"
 
@@ -17,8 +18,8 @@ class EnergyTrackerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             # 驗證用戶輸入嘅檔案路徑
             file_path = user_input[CONF_FILE_PATH]
             try:
-                with open(file_path, "r") as file:
-                    file.read()
+                async with aiofiles.open(file_path, mode="r") as file:
+                    await file.read()
             except Exception as e:
                 errors["base"] = "invalid_file_path"
             else:
