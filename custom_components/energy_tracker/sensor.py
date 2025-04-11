@@ -1,56 +1,34 @@
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
+from homeassistant.core import HomeAssistant
+from homeassistant.config_entries import ConfigEntry
 
 class TotalOnTimeSensor(SensorEntity):
-    def __init__(self, name, value, entry_id):
-        self._state = value
-        self._name = f"Energy Tracker {name.replace('_', ' ').title()}"
-        self._unique_id = f"energy_tracker_{entry_id}_{name}"
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, name: str, value: int):
+        """Initialize the sensor."""
+        self._attr_has_entity_name = True
+        self._attr_unique_id = f"energy_tracker_{entry.entry_id}_{name}"
+        self.entity_description = SensorEntityDescription(
+            key=name,
+            name=f"Energy Tracker {name.replace('_', ' ').title()}",
+            native_unit_of_measurement="minutes"
+        )
+        self._attr_native_value = value
         self._attr_should_poll = False
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def state(self):
-        return self._state
-
-    @property
-    def unit_of_measurement(self):
-        return "minutes"
-
-    @property
-    def unique_id(self):
-        return self._unique_id
 
 class DailyOnTimeSensor(SensorEntity):
-    def __init__(self, name, value, entry_id):
-        self._state = value
-        self._name = f"Energy Tracker {name.replace('_', ' ').title()}"
-        self._unique_id = f"energy_tracker_{entry_id}_{name}"
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, name: str, value: int):
+        """Initialize the sensor."""
+        self._attr_has_entity_name = True
+        self._attr_unique_id = f"energy_tracker_{entry.entry_id}_{name}"
+        self.entity_description = SensorEntityDescription(
+            key=name,
+            name=f"Energy Tracker {name.replace('_', ' ').title()}",
+            native_unit_of_measurement="minutes"
+        )
+        self._attr_native_value = value
         self._attr_should_poll = False
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def state(self):
-        return self._state
-
-    @property
-    def unit_of_measurement(self):
-        return "minutes"
-
-    @property
-    def unique_id(self):
-        return self._unique_id
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
     """Set up the sensor platform."""
     sensors = entry.runtime_data
     async_add_entities(sensors)
-
-    @property
-    def unique_id(self):
-        return self._unique_id
