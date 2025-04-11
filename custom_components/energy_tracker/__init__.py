@@ -1,17 +1,26 @@
 import json
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.core import HomeAssistant
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_FILE_PATH
 
 DOMAIN = "energy_tracker"
 
-async def async_setup_platform(hass: HomeAssistant, config, async_add_entities: AddEntitiesCallback, discovery_info=None):
-    # 假設 JSON 數據儲存喺一個檔案（要你調整路徑）
+async def async_setup(hass: HomeAssistant, config: dict):
+    """Set up the Energy Tracker integration."""
+    return True
+
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Set up Energy Tracker from a config entry."""
+    # 從 Config Entry 攞 JSON 檔案路徑
+    file_path = entry.data[CONF_FILE_PATH]
+
+    # 讀取 JSON 數據
     try:
-        with open("/path/to/your/data.json", "r") as file:
+        with open(file_path, "r") as file:
             data = json.load(file)
     except Exception as e:
-        hass.components.logger.error(f"無法讀取 JSON 檔案: {e}")
-        return
+        hass.components.logger.error(f"無法讀取 JSON 檔案 {file_path}: {e}")
+        return False
 
     # 提取總數據
     monthly_on_time = int(data.get("MonthlyOnTime", 0))
@@ -24,18 +33,30 @@ async def async_setup_platform(hass: HomeAssistant, config, async_add_entities: 
 
     # 創建感應器
     sensors = [
-        TotalOnTimeSensor("monthly_on_time", monthly_on_time),
-        TotalOnTimeSensor("monthly_on_time_ai", monthly_on_time_ai),
-        TotalOnTimeSensor("ai_saving", ai_saving)
+        TotalOnTimeSensor("monthly_on_time", monthly_on_time, entry.entry_id),
+        TotalOnTimeSensor("monthly_on_time_ai", monthly_on_time_ai, entry.entry_id),
+        TotalOnTimeSensor("ai_saving", ai_saving, entry.entry_id)
     ]
 
-    # 為每個日子創建感應器
+    # 為每個日子創建感應器（包括節省）
     for detail, ai_detail in zip(monthly_details, monthly_ai_details):
         day = detail["Day"]  # 例如 "02-01"
         on_time = detail["OnTime"]
         on_time_ai = ai_detail["OnTime"]
+        daily_saving = on_time - on_time_ai  # 每日節省
         date_key = f"2025_{day.replace('-', '_')}"  # 例如 "2025_02_01"
-        sensors.append(DailyOnTimeSensor(f"on_time_{date_key}", on_time))
-        sensors.append(DailyOnTimeSensor(f"on_time_ai_{date_key}", on_time_ai))
+        sensors.append(DailyOnTimeSensor(f"on_time_{date_key}", on_time, entry.entry_id))
+        sensors.append(DailyOnTimeSensor(f"on_time_ai_{date_key}", on_time_ai, entry.entry_id))
+        sensors.append(DailyOnTimeSensor(f"daily_saving_{date_key}", daily_saving, entry.entry_id))
 
-    async_add_entities(sensors)
+    # 加入感應器
+    hass.async_create_task(
+        hass.config_entries.async_forward_entry_setup(entry, "sensor")
+    )
+    entry.runtime_data = sensors
+    return True
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload a config entry."""
+    await hass.config_entries.async_forward_entry_unload(entry, "sensor")
+    return True
