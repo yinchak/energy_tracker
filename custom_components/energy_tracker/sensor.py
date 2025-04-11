@@ -27,8 +27,3 @@ class DailyOnTimeSensor(SensorEntity):
         )
         self._attr_native_value = value
         self._attr_should_poll = False
-
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
-    """Set up the sensor platform."""
-    sensors = entry.runtime_data
-    async_add_entities(sensors)
