@@ -1,0 +1,9 @@
+{
+  "domain": "energy_tracker",
+  "name": "Energy Tracker",
+  "version": "0.1.0",
+  "documentation": "https://github.com/yourusername/energy_tracker",
+  "requirements": [],
+  "codeowners": ["@yourusername"],
+  "iot_class": "local_polling"
+}
